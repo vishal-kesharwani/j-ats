@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Application {
+  id            String            @id @default(cuid())
+  company       String
+  role          String
+  location      String?
+  jobUrl        String?           @map("job_url")
+  platform      String?
+  appliedDate   DateTime          @default(now()) @map("applied_date")
+  resumeVersion String?           @map("resume_version")
+  status        ApplicationStatus @default(APPLIED)
+  followupDate  DateTime?         @map("followup_date")
+  notes         String?
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+
+  events        ApplicationEvent[]
+
+  @@map("applications")
+}
+
+model ApplicationEvent {
+  id            String      @id @default(cuid())
+  applicationId String      @map("application_id")
+  event         String
+  eventDate     DateTime    @default(now()) @map("event_date")
+  notes         String?
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("application_events")
+}
+
+enum ApplicationStatus {
+  APPLIED
+  SCREENING
+  INTERVIEW
+  ASSESSMENT
+  HR
+  OFFER
+  REJECTED
+  GHOSTED
+  WITHDRAWN
+}

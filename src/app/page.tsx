@@ -2,6 +2,8 @@ import Link from "next/link";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { RecentApplications } from "@/components/dashboard/recent-applications";
 
+export const dynamic = "force-dynamic";
+
 async function getStats() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/stats`, {
     cache: "no-store",

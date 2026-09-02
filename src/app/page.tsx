@@ -1,16 +1,36 @@
 import Link from "next/link";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { RecentApplications } from "@/components/dashboard/recent-applications";
+import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 async function getStats() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/stats`, {
-      cache: "no-store",
-    });
-    if (!res.ok) return { total: 0, applied: 0, screening: 0, interview: 0, assessment: 0, hr: 0, offer: 0, rejected: 0, ghosted: 0, withdrawn: 0, followupsDue: 0 };
-    return res.json();
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+
+    const [total, applied, screening, interview, assessment, hr, offer, rejected, ghosted, withdrawn, followupsDue] =
+      await Promise.all([
+        prisma.application.count(),
+        prisma.application.count({ where: { status: "APPLIED" } }),
+        prisma.application.count({ where: { status: "SCREENING" } }),
+        prisma.application.count({ where: { status: "INTERVIEW" } }),
+        prisma.application.count({ where: { status: "ASSESSMENT" } }),
+        prisma.application.count({ where: { status: "HR" } }),
+        prisma.application.count({ where: { status: "OFFER" } }),
+        prisma.application.count({ where: { status: "REJECTED" } }),
+        prisma.application.count({ where: { status: "GHOSTED" } }),
+        prisma.application.count({ where: { status: "WITHDRAWN" } }),
+        prisma.application.count({
+          where: {
+            followupDate: { lte: today },
+            status: { notIn: ["OFFER", "REJECTED", "GHOSTED", "WITHDRAWN"] },
+          },
+        }),
+      ]);
+
+    return { total, applied, screening, interview, assessment, hr, offer, rejected, ghosted, withdrawn, followupsDue };
   } catch {
     return { total: 0, applied: 0, screening: 0, interview: 0, assessment: 0, hr: 0, offer: 0, rejected: 0, ghosted: 0, withdrawn: 0, followupsDue: 0 };
   }
@@ -18,13 +38,17 @@ async function getStats() {
 
 async function getRecentApplications() {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/applications`,
-      { cache: "no-store" }
-    );
-    if (!res.ok) return [];
-    const apps = await res.json();
-    return apps.slice(0, 5);
+    const apps = await prisma.application.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    });
+    return apps.map((app) => ({
+      ...app,
+      appliedDate: app.appliedDate.toISOString(),
+      followupDate: app.followupDate?.toISOString() || null,
+      createdAt: app.createdAt.toISOString(),
+      updatedAt: app.updatedAt.toISOString(),
+    }));
   } catch {
     return [];
   }
@@ -32,12 +56,25 @@ async function getRecentApplications() {
 
 async function getFollowups() {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/followups`,
-      { cache: "no-store" }
-    );
-    if (!res.ok) return [];
-    return res.json();
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+
+    const followups = await prisma.application.findMany({
+      where: {
+        followupDate: { lte: today },
+        status: { notIn: ["OFFER", "REJECTED", "GHOSTED", "WITHDRAWN"] },
+      },
+      orderBy: { followupDate: "asc" },
+      take: 5,
+    });
+
+    return followups.map((f) => ({
+      ...f,
+      appliedDate: f.appliedDate.toISOString(),
+      followupDate: f.followupDate?.toISOString() || null,
+      createdAt: f.createdAt.toISOString(),
+      updatedAt: f.updatedAt.toISOString(),
+    }));
   } catch {
     return [];
   }
@@ -104,7 +141,7 @@ export default async function DashboardPage() {
                   </div>
                 ) : (
                   <div className="divide-y divide-[#EAEAEA]">
-                    {followups.slice(0, 5).map(
+                    {followups.map(
                       (f: {
                         id: string;
                         company: string;

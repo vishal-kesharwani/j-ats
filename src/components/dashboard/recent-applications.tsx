@@ -1,10 +1,20 @@
 import Link from "next/link";
-import { Application } from "@/types";
 import { StatusBadge } from "@/components/applications/status-badge";
 import { formatDate } from "@/lib/utils";
 
+interface ApplicationData {
+  id: string;
+  company: string;
+  role: string;
+  location: string | null;
+  platform: string | null;
+  appliedDate: string;
+  resumeVersion: string | null;
+  status: string;
+}
+
 interface RecentApplicationsProps {
-  applications: Application[];
+  applications: ApplicationData[];
 }
 
 export function RecentApplications({ applications }: RecentApplicationsProps) {
@@ -46,7 +56,7 @@ export function RecentApplications({ applications }: RecentApplicationsProps) {
               <span className="text-xs text-[#B0AEA8]">
                 {formatDate(app.appliedDate)}
               </span>
-              <StatusBadge status={app.status} size="sm" />
+              <StatusBadge status={app.status as never} size="sm" />
             </div>
           </Link>
         ))}

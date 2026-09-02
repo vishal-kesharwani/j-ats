@@ -34,9 +34,17 @@ export default function ApplicationsPage() {
     if (activeFilter !== "ALL") params.set("status", activeFilter);
     if (search) params.set("search", search);
 
-    const res = await fetch(`/api/applications?${params.toString()}`);
-    const data = await res.json();
-    setApplications(data);
+    try {
+      const res = await fetch(`/api/applications?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setApplications(data);
+      } else {
+        setApplications([]);
+      }
+    } catch {
+      setApplications([]);
+    }
     setLoading(false);
   }
 

@@ -102,6 +102,12 @@ export default async function DashboardPage() {
           </div>
           <div className="flex items-center gap-4">
             <Link
+              href="/resume-builder"
+              className="text-xs font-medium text-[#787774] hover:text-[#111111] transition-colors"
+            >
+              Resume Builder
+            </Link>
+            <Link
               href="/followups"
               className="text-xs font-medium text-[#787774] hover:text-[#111111] transition-colors"
             >

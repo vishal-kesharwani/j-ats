@@ -1,73 +1,90 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const application = await prisma.application.findUnique({
-    where: { id },
-    include: { events: { orderBy: { eventDate: "desc" } } },
-  });
+  try {
+    const { id } = await params;
+    const application = await prisma.application.findUnique({
+      where: { id },
+      include: { events: { orderBy: { eventDate: "desc" } } },
+    });
 
-  if (!application) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (!application) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(application);
+  } catch (error) {
+    console.error("GET /api/applications/[id] error:", error);
+    return NextResponse.json({ error: "Failed to fetch application" }, { status: 500 });
   }
-
-  return NextResponse.json(application);
 }
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const body = await request.json();
+  try {
+    const { id } = await params;
+    const body = await request.json();
 
-  const existing = await prisma.application.findUnique({ where: { id } });
-  if (!existing) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
+    const existing = await prisma.application.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
 
-  const { status, ...otherFields } = body;
+    const { status, ...otherFields } = body;
 
-  const updateData: Record<string, unknown> = { ...otherFields };
+    const updateData: Record<string, unknown> = { ...otherFields };
 
-  if (status && status !== existing.status) {
-    updateData.status = status;
-    updateData.followupDate = null;
+    if (status && status !== existing.status) {
+      updateData.status = status;
+      updateData.followupDate = null;
 
-    await prisma.applicationEvent.create({
-      data: {
-        applicationId: id,
-        event: status.charAt(0) + status.slice(1).toLowerCase(),
-        eventDate: new Date(),
-      },
+      await prisma.applicationEvent.create({
+        data: {
+          applicationId: id,
+          event: status.charAt(0) + status.slice(1).toLowerCase(),
+          eventDate: new Date(),
+        },
+      });
+    }
+
+    const application = await prisma.application.update({
+      where: { id },
+      data: updateData,
+      include: { events: { orderBy: { eventDate: "desc" } } },
     });
+
+    return NextResponse.json(application);
+  } catch (error) {
+    console.error("PUT /api/applications/[id] error:", error);
+    return NextResponse.json({ error: "Failed to update application" }, { status: 500 });
   }
-
-  const application = await prisma.application.update({
-    where: { id },
-    data: updateData,
-    include: { events: { orderBy: { eventDate: "desc" } } },
-  });
-
-  return NextResponse.json(application);
 }
 
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
+  try {
+    const { id } = await params;
 
-  const existing = await prisma.application.findUnique({ where: { id } });
-  if (!existing) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    const existing = await prisma.application.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    await prisma.application.delete({ where: { id } });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("DELETE /api/applications/[id] error:", error);
+    return NextResponse.json({ error: "Failed to delete application" }, { status: 500 });
   }
-
-  await prisma.application.delete({ where: { id } });
-
-  return NextResponse.json({ success: true });
 }

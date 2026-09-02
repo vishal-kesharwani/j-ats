@@ -5,27 +5,42 @@ import { RecentApplications } from "@/components/dashboard/recent-applications";
 export const dynamic = "force-dynamic";
 
 async function getStats() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/stats`, {
-    cache: "no-store",
-  });
-  return res.json();
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/stats`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return { total: 0, applied: 0, screening: 0, interview: 0, assessment: 0, hr: 0, offer: 0, rejected: 0, ghosted: 0, withdrawn: 0, followupsDue: 0 };
+    return res.json();
+  } catch {
+    return { total: 0, applied: 0, screening: 0, interview: 0, assessment: 0, hr: 0, offer: 0, rejected: 0, ghosted: 0, withdrawn: 0, followupsDue: 0 };
+  }
 }
 
 async function getRecentApplications() {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/applications`,
-    { cache: "no-store" }
-  );
-  const apps = await res.json();
-  return apps.slice(0, 5);
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/applications`,
+      { cache: "no-store" }
+    );
+    if (!res.ok) return [];
+    const apps = await res.json();
+    return apps.slice(0, 5);
+  } catch {
+    return [];
+  }
 }
 
 async function getFollowups() {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/followups`,
-    { cache: "no-store" }
-  );
-  return res.json();
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/followups`,
+      { cache: "no-store" }
+    );
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
 }
 
 export default async function DashboardPage() {

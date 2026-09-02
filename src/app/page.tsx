@@ -2,6 +2,7 @@ import Link from "next/link";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { RecentApplications } from "@/components/dashboard/recent-applications";
 import { prisma } from "@/lib/db";
+import { checkStaleApplications } from "@/lib/auto-status";
 
 export const dynamic = "force-dynamic";
 
@@ -81,6 +82,8 @@ async function getFollowups() {
 }
 
 export default async function DashboardPage() {
+  await checkStaleApplications();
+
   const [stats, recentApps, followups] = await Promise.all([
     getStats(),
     getRecentApplications(),

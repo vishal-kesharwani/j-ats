@@ -217,6 +217,15 @@ export default function ApplicationDetailPage() {
             </div>
 
             <div className="border border-[#EAEAEA] bg-white p-5">
+              <Link
+                href={`/applications/${id}/edit`}
+                className="block w-full px-4 py-2.5 text-center text-sm font-medium text-[#111111] bg-[#F7F6F3] hover:bg-[#EAEAEA] transition-colors"
+              >
+                Edit Application
+              </Link>
+            </div>
+
+            <div className="border border-[#EAEAEA] bg-white p-5">
               <button
                 onClick={handleDelete}
                 className="w-full px-4 py-2.5 text-sm font-medium text-[#9F2F2D] hover:bg-[#FDEBEC] transition-colors"

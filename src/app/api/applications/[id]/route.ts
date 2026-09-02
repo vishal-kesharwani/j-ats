@@ -18,10 +18,21 @@ export async function GET(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    return NextResponse.json(application);
+    return NextResponse.json({
+      ...application,
+      appliedDate: application.appliedDate.toISOString(),
+      followupDate: application.followupDate?.toISOString() || null,
+      createdAt: application.createdAt.toISOString(),
+      updatedAt: application.updatedAt.toISOString(),
+      events: application.events.map((e) => ({
+        ...e,
+        eventDate: e.eventDate.toISOString(),
+        createdAt: e.createdAt.toISOString(),
+      })),
+    });
   } catch (error) {
     console.error("GET /api/applications/[id] error:", error);
-    return NextResponse.json({ error: "Failed to fetch application" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
   }
 }
 
@@ -40,7 +51,16 @@ export async function PUT(
 
     const { status, ...otherFields } = body;
 
-    const updateData: Record<string, unknown> = { ...otherFields };
+    const updateData: Record<string, unknown> = {};
+
+    if (otherFields.company !== undefined) updateData.company = otherFields.company;
+    if (otherFields.role !== undefined) updateData.role = otherFields.role;
+    if (otherFields.location !== undefined) updateData.location = otherFields.location || null;
+    if (otherFields.jobUrl !== undefined) updateData.jobUrl = otherFields.jobUrl || null;
+    if (otherFields.platform !== undefined) updateData.platform = otherFields.platform || null;
+    if (otherFields.resumeVersion !== undefined) updateData.resumeVersion = otherFields.resumeVersion || null;
+    if (otherFields.notes !== undefined) updateData.notes = otherFields.notes || null;
+    if (otherFields.appliedDate !== undefined) updateData.appliedDate = new Date(otherFields.appliedDate);
 
     if (status && status !== existing.status) {
       updateData.status = status;
@@ -61,10 +81,21 @@ export async function PUT(
       include: { events: { orderBy: { eventDate: "desc" } } },
     });
 
-    return NextResponse.json(application);
+    return NextResponse.json({
+      ...application,
+      appliedDate: application.appliedDate.toISOString(),
+      followupDate: application.followupDate?.toISOString() || null,
+      createdAt: application.createdAt.toISOString(),
+      updatedAt: application.updatedAt.toISOString(),
+      events: application.events.map((e) => ({
+        ...e,
+        eventDate: e.eventDate.toISOString(),
+        createdAt: e.createdAt.toISOString(),
+      })),
+    });
   } catch (error) {
     console.error("PUT /api/applications/[id] error:", error);
-    return NextResponse.json({ error: "Failed to update application" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update" }, { status: 500 });
   }
 }
 
@@ -85,6 +116,6 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("DELETE /api/applications/[id] error:", error);
-    return NextResponse.json({ error: "Failed to delete application" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to delete" }, { status: 500 });
   }
 }

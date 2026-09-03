@@ -57,6 +57,7 @@ export default function EditApplicationPage() {
 
     if (res.ok) {
       router.push(`/applications/${id}`);
+      router.refresh();
     } else {
       alert("Failed to update");
       setSaving(false);

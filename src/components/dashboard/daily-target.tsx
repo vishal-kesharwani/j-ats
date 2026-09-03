@@ -33,10 +33,10 @@ export function DailyTarget({ todayCount }: DailyTargetProps) {
   const isMet = todayCount >= target;
 
   return (
-    <div className="border border-[#EAEAEA] bg-white p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xs font-medium uppercase tracking-widest text-[#787774]">
-          Daily Target
+    <div className="border border-[#EAEAEA] bg-white p-6 h-full flex flex-col">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-[10px] font-medium uppercase tracking-[0.15em] text-[#B0AEA8]">
+          Today&apos;s Progress
         </h2>
         {editing ? (
           <div className="flex items-center gap-2">
@@ -44,58 +44,78 @@ export function DailyTarget({ todayCount }: DailyTargetProps) {
               type="number"
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
-              className="w-16 border border-[#EAEAEA] px-2 py-1 text-xs text-[#111111] focus:outline-none focus:border-[#111111]"
+              className="w-14 border border-[#EAEAEA] px-2 py-1 text-xs text-[#111111] text-center focus:outline-none focus:border-[#111111]"
               min="1"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter") saveTarget();
                 if (e.key === "Escape") setEditing(false);
               }}
+              onBlur={saveTarget}
             />
-            <button
-              onClick={saveTarget}
-              className="text-[10px] font-medium text-[#111111] hover:text-[#787774]"
-            >
-              Save
-            </button>
           </div>
         ) : (
           <button
             onClick={() => setEditing(true)}
-            className="text-[10px] font-medium text-[#B0AEA8] hover:text-[#111111] transition-colors"
+            className="text-[10px] font-medium text-[#B0AEA8] hover:text-[#111111] transition-colors border border-[#EAEAEA] px-2 py-0.5"
           >
-            {target}/day
+            target: {target}
           </button>
         )}
       </div>
 
-      <div className="flex items-end gap-3 mb-3">
-        <span className="text-3xl font-semibold tracking-tight text-[#111111]">
-          {todayCount}
-        </span>
-        <span className="text-sm text-[#B0AEA8] mb-1">/ {target}</span>
-      </div>
+      <div className="flex-1 flex flex-col items-center justify-center">
+        {/* Circular progress */}
+        <div className="relative w-32 h-32 mb-4">
+          <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+            <circle
+              cx="50"
+              cy="50"
+              r="42"
+              fill="none"
+              stroke="#F7F6F3"
+              strokeWidth="6"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r="42"
+              fill="none"
+              stroke={isMet ? "#346538" : "#111111"}
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeDasharray={`${2 * Math.PI * 42}`}
+              strokeDashoffset={`${2 * Math.PI * 42 * (1 - progress / 100)}`}
+              className="transition-all duration-700 ease-out"
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-3xl font-bold tracking-tight text-[#111111]">
+              {todayCount}
+            </span>
+            <span className="text-[10px] text-[#B0AEA8] uppercase tracking-widest">
+              of {target}
+            </span>
+          </div>
+        </div>
 
-      {/* Progress bar */}
-      <div className="w-full h-2 bg-[#F7F6F3] rounded-full overflow-hidden mb-3">
-        <div
-          className="h-full rounded-full transition-all duration-500 ease-out"
-          style={{
-            width: `${progress}%`,
-            backgroundColor: isMet ? "#346538" : "#111111",
-          }}
-        />
+        {isMet ? (
+          <div className="flex items-center gap-1.5 bg-[#EDF3EC] px-3 py-1.5">
+            <svg className="w-3 h-3 text-[#346538]" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            <span className="text-[10px] font-medium text-[#346538] uppercase tracking-widest">
+              Target achieved
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 bg-[#FDEBEC] px-3 py-1.5">
+            <span className="text-[10px] font-medium text-[#9F2F2D] uppercase tracking-widest">
+              {remaining} more to go
+            </span>
+          </div>
+        )}
       </div>
-
-      {isMet ? (
-        <p className="text-xs font-medium text-[#346538]">
-          Target achieved
-        </p>
-      ) : (
-        <p className="text-xs text-[#9F2F2D]">
-          {remaining} more to go today
-        </p>
-      )}
     </div>
   );
 }

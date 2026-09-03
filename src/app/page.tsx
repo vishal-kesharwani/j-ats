@@ -141,101 +141,118 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#FBFBFA]">
       <header className="border-b border-[#EAEAEA] bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight text-[#111111]">
-              J-ATS
-            </h1>
-            <p className="text-xs text-[#B0AEA8] mt-0.5">Job Application Tracker</p>
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-[#111111] flex items-center justify-center">
+              <span className="text-white text-xs font-bold">J</span>
+            </div>
+            <div>
+              <h1 className="text-lg font-bold tracking-tight text-[#111111]">
+                J-ATS
+              </h1>
+              <p className="text-[9px] text-[#B0AEA8] uppercase tracking-[0.2em]">Job Application Tracker</p>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <Link
               href="/resume-builder"
-              className="text-xs font-medium text-[#787774] hover:text-[#111111] transition-colors"
+              className="px-4 py-2 text-[10px] font-medium text-[#787774] hover:text-[#111111] hover:bg-[#F7F6F3] transition-all uppercase tracking-widest"
             >
-              Resume Builder
+              Resume
             </Link>
             <Link
               href="/followups"
-              className="text-xs font-medium text-[#787774] hover:text-[#111111] transition-colors"
+              className="px-4 py-2 text-[10px] font-medium text-[#787774] hover:text-[#111111] hover:bg-[#F7F6F3] transition-all uppercase tracking-widest relative"
             >
               Follow-ups
               {stats.followupsDue > 0 && (
-                <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-[4px] bg-[#FDEBEC] text-[10px] font-medium text-[#9F2F2D]">
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#9F2F2D] text-[8px] font-bold text-white flex items-center justify-center">
                   {stats.followupsDue}
                 </span>
               )}
             </Link>
             <Link
               href="/applications/new"
-              className="bg-[#111111] px-5 py-2.5 text-xs font-medium text-white hover:bg-[#333333] active:scale-[0.98] transition-all"
+              className="bg-[#111111] px-5 py-2 text-[10px] font-medium text-white hover:bg-[#333333] active:scale-[0.98] transition-all uppercase tracking-widest"
             >
-              + Add Job
+              + New
             </Link>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6 py-10">
-        <div className="space-y-8">
-          <StatsCards stats={stats} />
+      <main className="mx-auto max-w-7xl px-6 py-8">
+        {/* Stats */}
+        <StatsCards stats={stats} />
 
-          {/* Daily Target + Graph */}
-          <div className="grid gap-8 lg:grid-cols-3">
-            <div>
-              <DailyTarget todayCount={dailyData.todayCount} />
-            </div>
-            <div className="lg:col-span-2">
-              <ApplicationGraph data={dailyData.dailyCounts} target={15} />
-            </div>
+        {/* Target + Graph */}
+        <div className="grid gap-6 lg:grid-cols-3 mt-6">
+          <div>
+            <DailyTarget todayCount={dailyData.todayCount} />
+          </div>
+          <div className="lg:col-span-2">
+            <ApplicationGraph data={dailyData.dailyCounts} target={15} />
+          </div>
+        </div>
+
+        {/* Recent + Follow-ups */}
+        <div className="grid gap-6 lg:grid-cols-3 mt-6">
+          <div className="lg:col-span-2">
+            <RecentApplications applications={recentApps} />
           </div>
 
-          {/* Recent + Follow-ups */}
-          <div className="grid gap-8 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <RecentApplications applications={recentApps} />
-            </div>
-
-            <div>
-              <div className="border border-[#EAEAEA] bg-white">
-                <div className="border-b border-[#EAEAEA] px-5 py-4">
-                  <h2 className="text-xs font-medium uppercase tracking-widest text-[#787774]">
-                    Follow-ups Due
-                  </h2>
-                </div>
-                {followups.length === 0 ? (
-                  <div className="px-5 py-8 text-center">
-                    <p className="text-xs text-[#B0AEA8]">All caught up</p>
+          <div>
+            <div className="border border-[#EAEAEA] bg-white h-full">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-[#EAEAEA]">
+                <h2 className="text-[10px] font-medium uppercase tracking-[0.15em] text-[#B0AEA8]">
+                  Follow-ups Due
+                </h2>
+                <Link
+                  href="/followups"
+                  className="text-[10px] font-medium text-[#787774] hover:text-[#111111] transition-colors uppercase tracking-widest"
+                >
+                  View all
+                </Link>
+              </div>
+              {followups.length === 0 ? (
+                <div className="px-6 py-12 text-center">
+                  <div className="w-10 h-10 mx-auto mb-3 bg-[#EDF3EC] flex items-center justify-center">
+                    <svg className="w-5 h-5 text-[#346538]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                   </div>
-                ) : (
-                  <div className="divide-y divide-[#EAEAEA]">
-                    {followups.map(
-                      (f: {
-                        id: string;
-                        company: string;
-                        role: string;
-                        resumeVersion: string | null;
-                      }) => (
-                        <Link
-                          key={f.id}
-                          href={`/applications/${f.id}`}
-                          className="block px-5 py-4 hover:bg-[#FBFBFA] transition-colors"
-                        >
-                          <p className="text-sm font-medium text-[#111111]">
+                  <p className="text-xs text-[#787774]">All caught up</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-[#EAEAEA]">
+                  {followups.map(
+                    (f: {
+                      id: string;
+                      company: string;
+                      role: string;
+                      resumeVersion: string | null;
+                    }) => (
+                      <Link
+                        key={f.id}
+                        href={`/applications/${f.id}`}
+                        className="flex items-center justify-between px-6 py-4 hover:bg-[#FBFBFA] transition-colors group"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-[#111111] group-hover:text-[#333333] transition-colors truncate">
                             {f.company}
                           </p>
-                          <p className="text-xs text-[#787774]">{f.role}</p>
-                          {f.resumeVersion && (
-                            <span className="mt-2 inline-block rounded-[4px] bg-[#F7F6F3] px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-[#787774]">
-                              {f.resumeVersion}
-                            </span>
-                          )}
-                        </Link>
-                      )
-                    )}
-                  </div>
-                )}
-              </div>
+                          <p className="text-xs text-[#787774] truncate">{f.role}</p>
+                        </div>
+                        {f.resumeVersion && (
+                          <span className="ml-2 shrink-0 rounded-[3px] bg-[#F7F6F3] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-widest text-[#787774]">
+                            {f.resumeVersion}
+                          </span>
+                        )}
+                      </Link>
+                    )
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -72,19 +72,15 @@ export function ApplicationGraph({ data, target }: ApplicationGraphProps) {
               >
                 <div
                   className={`absolute inset-0 rounded-t-[2px] ${
-                    isToday
-                      ? metTarget
-                        ? "bg-[#346538]"
-                        : "bg-[#111111]"
-                      : metTarget
-                        ? "bg-[#346538]/60"
-                        : "bg-[#111111]/40"
-                  } hover:opacity-80 transition-opacity`}
+                    metTarget
+                      ? "bg-[#346538]"
+                      : "bg-[#9F2F2D]"
+                  } ${isToday ? "ring-1 ring-[#111111] ring-offset-1" : ""} hover:opacity-80 transition-opacity`}
                 />
                 {/* Tooltip */}
                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:block z-20">
                   <div className="bg-[#111111] text-white px-2 py-1 text-[9px] font-medium whitespace-nowrap">
-                    {day.count}
+                    {day.count} / {target}
                   </div>
                 </div>
               </div>
@@ -110,16 +106,16 @@ export function ApplicationGraph({ data, target }: ApplicationGraphProps) {
       {/* Legend */}
       <div className="flex items-center gap-4 mt-4 pt-3 border-t border-[#EAEAEA]">
         <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-[1px] bg-[#111111]" />
-          <span className="text-[9px] text-[#B0AEA8]">Below target</span>
-        </div>
-        <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-[1px] bg-[#346538]" />
           <span className="text-[9px] text-[#B0AEA8]">Target met</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 border-t border-dashed border-[#9F2F2D]/40" />
-          <span className="text-[9px] text-[#B0AEA8]">Target</span>
+          <div className="w-2 h-2 rounded-[1px] bg-[#9F2F2D]" />
+          <span className="text-[9px] text-[#B0AEA8]">Below target</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 border border-[#111111]" />
+          <span className="text-[9px] text-[#B0AEA8]">Today</span>
         </div>
       </div>
     </div>

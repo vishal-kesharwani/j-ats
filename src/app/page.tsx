@@ -191,7 +191,7 @@ export default async function DashboardPage() {
             <DailyTarget todayCount={dailyData.todayCount} />
           </div>
           <div className="lg:col-span-2">
-            <ApplicationGraph data={dailyData.dailyCounts} target={15} />
+            <ApplicationGraph data={dailyData.dailyCounts} />
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface DayData {
   date: string;
@@ -9,17 +9,45 @@ interface DayData {
 
 interface ApplicationGraphProps {
   data: DayData[];
-  target: number;
 }
 
-export function ApplicationGraph({ data, target }: ApplicationGraphProps) {
+export function ApplicationGraph({ data }: ApplicationGraphProps) {
+  const [target, setTarget] = useState(15);
+  const [editing, setEditing] = useState(false);
+  const [inputVal, setInputVal] = useState("15");
   const [range, setRange] = useState<7 | 14 | 30>(7);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("jats-daily-target");
+    if (stored) {
+      setTarget(parseInt(stored));
+      setInputVal(stored);
+    }
+
+    const handleStorage = () => {
+      const val = localStorage.getItem("jats-daily-target");
+      if (val) {
+        setTarget(parseInt(val));
+        setInputVal(val);
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  function saveTarget() {
+    const val = parseInt(inputVal);
+    if (val > 0) {
+      setTarget(val);
+      localStorage.setItem("jats-daily-target", val.toString());
+      window.dispatchEvent(new Event("storage"));
+    }
+    setEditing(false);
+  }
 
   const sliced = data.slice(-range);
   const maxCount = Math.max(...sliced.map((d) => d.count), target);
-
   const today = new Date().toISOString().split("T")[0];
-
   const totalApps = sliced.reduce((sum, d) => sum + d.count, 0);
   const avgApps = sliced.length > 0 ? (totalApps / sliced.length).toFixed(1) : "0";
 
@@ -38,34 +66,64 @@ export function ApplicationGraph({ data, target }: ApplicationGraphProps) {
             <span className="text-[10px] text-[#B0AEA8]">avg/day</span>
           </div>
         </div>
-        <div className="flex bg-[#FBFBFA] p-0.5">
-          {[7, 14, 30].map((r) => (
+        <div className="flex items-center gap-3">
+          {/* Target indicator */}
+          {editing ? (
+            <div className="flex items-center gap-1">
+              <input
+                type="number"
+                value={inputVal}
+                onChange={(e) => setInputVal(e.target.value)}
+                className="w-12 border border-[#EAEAEA] px-1.5 py-1 text-[10px] text-[#111111] text-center focus:outline-none focus:border-[#111111]"
+                min="1"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") saveTarget();
+                  if (e.key === "Escape") setEditing(false);
+                }}
+                onBlur={saveTarget}
+              />
+            </div>
+          ) : (
             <button
-              key={r}
-              onClick={() => setRange(r as 7 | 14 | 30)}
-              className={`px-3 py-1.5 text-[10px] font-medium uppercase tracking-widest transition-all ${
-                range === r
-                  ? "bg-[#111111] text-white"
-                  : "text-[#B0AEA8] hover:text-[#111111]"
-              }`}
+              onClick={() => setEditing(true)}
+              className="text-[10px] font-medium text-[#9F2F2D] border border-[#9F2F2D]/30 px-2 py-0.5 hover:bg-[#FDEBEC] transition-colors uppercase tracking-widest"
             >
-              {r}d
+              target: {target}
             </button>
-          ))}
+          )}
+
+          {/* Range toggle */}
+          <div className="flex bg-[#FBFBFA] p-0.5">
+            {[7, 14, 30].map((r) => (
+              <button
+                key={r}
+                onClick={() => setRange(r as 7 | 14 | 30)}
+                className={`px-3 py-1.5 text-[10px] font-medium uppercase tracking-widest transition-all ${
+                  range === r
+                    ? "bg-[#111111] text-white"
+                    : "text-[#B0AEA8] hover:text-[#111111]"
+                }`}
+              >
+                {r}d
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Graph */}
       <div className="flex-1 relative">
-        {/* Target line */}
         <div
           className="absolute left-0 right-0 z-10 flex items-center"
           style={{ bottom: `${(target / maxCount) * 100}%` }}
         >
           <div className="w-full border-t border-dashed border-[#9F2F2D]/30" />
+          <span className="absolute right-0 -top-3 text-[8px] text-[#9F2F2D]/50 uppercase tracking-widest">
+            {target}
+          </span>
         </div>
 
-        {/* Bars */}
         <div className="h-48 flex items-end gap-1">
           {sliced.map((day) => {
             const height = maxCount > 0 ? (day.count / maxCount) * 100 : 0;
@@ -88,7 +146,6 @@ export function ApplicationGraph({ data, target }: ApplicationGraphProps) {
                         : "bg-gradient-to-t from-[#9F2F2D] to-[#9F2F2D]/80"
                     } ${isToday ? "ring-2 ring-[#111111] ring-offset-1" : ""} hover:opacity-90 transition-opacity`}
                   />
-                  {/* Tooltip */}
                   <div className="absolute -top-10 left-1/2 -translate-x-1/2 hidden group-hover:block z-20">
                     <div className="bg-[#111111] text-white px-2.5 py-1.5 text-[10px] font-medium whitespace-nowrap shadow-lg">
                       {day.count} applied
@@ -100,7 +157,6 @@ export function ApplicationGraph({ data, target }: ApplicationGraphProps) {
           })}
         </div>
 
-        {/* Date labels */}
         <div className="flex gap-1 mt-3 border-t border-[#EAEAEA] pt-3">
           {sliced.map((day, i) => {
             const showLabel = range === 7 || i % Math.ceil(range / 7) === 0;
@@ -115,7 +171,6 @@ export function ApplicationGraph({ data, target }: ApplicationGraphProps) {
         </div>
       </div>
 
-      {/* Legend */}
       <div className="flex items-center gap-5 mt-4 pt-4 border-t border-[#EAEAEA]">
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-[2px] bg-gradient-to-t from-[#346538] to-[#346538]/80" />

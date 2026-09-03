@@ -17,6 +17,16 @@ export function DailyTarget({ todayCount }: DailyTargetProps) {
       setTarget(parseInt(stored));
       setInputVal(stored);
     }
+
+    const handleStorage = () => {
+      const val = localStorage.getItem("jats-daily-target");
+      if (val) {
+        setTarget(parseInt(val));
+        setInputVal(val);
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
   function saveTarget() {
@@ -24,6 +34,7 @@ export function DailyTarget({ todayCount }: DailyTargetProps) {
     if (val > 0) {
       setTarget(val);
       localStorage.setItem("jats-daily-target", val.toString());
+      window.dispatchEvent(new Event("storage"));
     }
     setEditing(false);
   }
@@ -65,7 +76,6 @@ export function DailyTarget({ todayCount }: DailyTargetProps) {
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center">
-        {/* Circular progress */}
         <div className="relative w-32 h-32 mb-4">
           <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
             <circle
